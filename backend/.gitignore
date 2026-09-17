@@ -1,2 +1,2 @@
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE
-PORT=3000
+node_modules/
+.env
