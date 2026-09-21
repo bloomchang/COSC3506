@@ -2,7 +2,7 @@
 
 Team members:
 - Bhumika Rai, 5144332
-- Thahira Bailey, 
+- Thahira Bailey, 5144501
 - Ran Zhai, 5132328
 
 Project Option: Project 1 
