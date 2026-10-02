@@ -1,0 +1,18 @@
+{
+  "directory_endpoint": "https://cosc3506-k24r.onrender.com/api/students",
+  "student_detail_endpoint": "https://cosc3506-k24r.onrender.com/api/students/{id}",
+  "project_detail_endpoint": "https://cosc3506-k24r.onrender.com/api/projects/{id}",
+  "student_page_route": "https://cosc3506-team04-frontend.onrender.com/students/{id}",
+  "project_page_route": "https://cosc3506-team04-frontend.onrender.com/projects/{id}",
+  "query_parameters": {
+    "text": "q",
+    "skill": "skills",
+    "availability": "availability",
+    "status": "status"
+  },
+  "directory_results_path": "",
+  "id_field": "id",
+  "skills_field": "skills",
+  "contributors_field": "contributors",
+  "optional_broken_project_id": "P07"
+}
