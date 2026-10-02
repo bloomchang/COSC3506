@@ -1,4 +1,4 @@
-// Point this at your deployed backend. No trailing slash.
-// Local development:  http://localhost:3000
-// Deployed:           https://your-api.onrender.com
-window.API_BASE_URL = "https://cosc3506-k24r.onrender.com";
+window.API_BASE_URL =
+  ["localhost", "127.0.0.1"].includes(window.location.hostname)
+    ? "http://localhost:3000"
+    : "https://cosc3506-k24r.onrender.com";

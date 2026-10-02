@@ -1,33 +1,75 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
 import http from "node:http";
-import { extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL(".", import.meta.url));
-const types = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
+const root = new URL(".", import.meta.url);
+
+// Only these public files can be served.
+const publicFiles = {
+  "/": ["index.html", "text/html; charset=utf-8"],
+  "/index.html": ["index.html", "text/html; charset=utf-8"],
+  "/app.js": ["app.js", "text/javascript; charset=utf-8"],
+  "/config.js": ["config.js", "text/javascript; charset=utf-8"],
 };
 
-const server = http.createServer(async (request, response) => {
-  const pathname = new URL(request.url, "http://localhost").pathname;
-  const requested = pathname === "/" ? "index.html" : pathname.slice(1);
-  const file = resolve(root, requested);
-  if (!file.startsWith(resolve(root))) {
-    response.writeHead(403).end("Forbidden");
+const server = http.createServer((request, response) => {
+  if (!["GET", "HEAD"].includes(request.method)) {
+    response.writeHead(405, { Allow: "GET, HEAD" }).end();
     return;
   }
+
+  let pathname;
   try {
-    const info = await stat(file);
-    if (!info.isFile()) throw new Error("not a file");
-    response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" });
-    createReadStream(file).pipe(response);
+    pathname = new URL(request.url, "http://localhost").pathname;
   } catch {
-    response.writeHead(404).end("Not found");
+    response.writeHead(400).end("Invalid URL");
+    return;
   }
+
+  const appRoute =
+    /^\/students\/[^/]+\/?$/.test(pathname) ||
+    /^\/projects\/[^/]+\/?$/.test(pathname) ||
+    pathname === "/inquiry" ||
+    pathname === "/items";
+
+  const entry = publicFiles[pathname] ||
+    (appRoute ? publicFiles["/"] : null);
+
+  if (!entry) {
+    response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    response.end("Page not found. Return to / to browse talent.");
+    return;
+  }
+
+  const [filename, contentType] = entry;
+  const stream = createReadStream(fileURLToPath(new URL(filename, root)));
+
+  stream.once("error", () => {
+    if (!response.headersSent) {
+      response.writeHead(500);
+      response.end("Could not load the page.");
+    } else {
+      response.destroy();
+    }
+  });
+
+  stream.once("open", () => {
+    response.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": "no-cache",
+    });
+
+    if (request.method === "HEAD") {
+      stream.destroy();
+      response.end();
+    } else {
+      stream.pipe(response);
+    }
+  });
 });
 
-server.listen(8080, "127.0.0.1", () => {
-  console.log("Frontend available at http://localhost:8080");
+const port = Number(process.env.PORT || 8080);
+
+server.listen(port, "0.0.0.0", () => {
+  console.log(`Frontend available at http://localhost:${port}`);
 });
